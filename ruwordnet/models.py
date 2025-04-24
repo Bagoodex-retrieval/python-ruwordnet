@@ -4,27 +4,32 @@ from sqlalchemy import Column, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+
+class Base:
+    __allow_unmapped__ = True
+
+
+Base = declarative_base(cls=Base)
 
 
 composition_table = Table(
-    'composition_relation',
+    "composition_relation",
     Base.metadata,
-    Column('word_id', String(), ForeignKey("sense.id"), primary_key=True),
-    Column('phrase_id', String(), ForeignKey("sense.id"), primary_key=True)
+    Column("word_id", String(), ForeignKey("sense.id"), primary_key=True),
+    Column("phrase_id", String(), ForeignKey("sense.id"), primary_key=True),
 )
 
 
 derivation_table = Table(
-    'derivation_relation',
+    "derivation_relation",
     Base.metadata,
-    Column('source_id', String(), ForeignKey("sense.id"), primary_key=True),
-    Column('derivative_id', String(), ForeignKey("sense.id"), primary_key=True)
+    Column("source_id", String(), ForeignKey("sense.id"), primary_key=True),
+    Column("derivative_id", String(), ForeignKey("sense.id"), primary_key=True),
 )
 
 
 class Sense(Base):
-    __tablename__ = 'sense'
+    __tablename__ = "sense"
     metadata = Base.metadata
     id: str = Column(String(), primary_key=True, index=True)
     name: str = Column(String(), index=True)
@@ -40,35 +45,35 @@ class Sense(Base):
     entry_id=None,
     """
 
-    synset_id: str = Column(String(), ForeignKey('synset.id'))
-    synset: 'Synset' = relationship("Synset", back_populates="senses")
+    synset_id: str = Column(String(), ForeignKey("synset.id"))
+    synset: "Synset" = relationship("Synset", back_populates="senses")
 
-    words: List['Sense'] = relationship(
+    words: List["Sense"] = relationship(
         "Sense",
         secondary=composition_table,
-        back_populates='phrases',
+        back_populates="phrases",
         primaryjoin=id == composition_table.c.phrase_id,
         secondaryjoin=id == composition_table.c.word_id,
     )
-    phrases: List['Sense'] = relationship(
+    phrases: List["Sense"] = relationship(
         "Sense",
         secondary=composition_table,
-        back_populates='words',
+        back_populates="words",
         primaryjoin=id == composition_table.c.word_id,
         secondaryjoin=id == composition_table.c.phrase_id,
     )
 
-    sources: List['Sense'] = relationship(
+    sources: List["Sense"] = relationship(
         "Sense",
         secondary=derivation_table,
-        back_populates='derivations',
+        back_populates="derivations",
         primaryjoin=id == derivation_table.c.derivative_id,
         secondaryjoin=id == derivation_table.c.source_id,
     )
-    derivations: List['Sense'] = relationship(
+    derivations: List["Sense"] = relationship(
         "Sense",
         secondary=derivation_table,
-        back_populates='sources',
+        back_populates="sources",
         primaryjoin=id == derivation_table.c.source_id,
         secondaryjoin=id == derivation_table.c.derivative_id,
     )
@@ -78,106 +83,108 @@ class Sense(Base):
 
 
 hypernymy_table = Table(
-    'hypernym_relation',
+    "hypernym_relation",
     Base.metadata,
-    Column('hyponym_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('hypernym_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("hyponym_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("hypernym_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 domains_table = Table(
-    'domain_relation',
+    "domain_relation",
     Base.metadata,
-    Column('domain_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('domain_item_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("domain_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("domain_item_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 meronymy_table = Table(
-    'meronymy_relation',
+    "meronymy_relation",
     Base.metadata,
-    Column('meronym_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('holonym_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("meronym_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("holonym_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 instances_table = Table(
-    'instance_relation',
+    "instance_relation",
     Base.metadata,
-    Column('instance_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('class_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("instance_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("class_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 entailment_table = Table(
-    'entailment_relation',
+    "entailment_relation",
     Base.metadata,
-    Column('premise_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('conclusion_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("premise_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("conclusion_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 cause_table = Table(
-    'cause_relation',
+    "cause_relation",
     Base.metadata,
-    Column('cause_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('effect_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("cause_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("effect_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 pos_synonymy_table = Table(
-    'pos_synonymy_relation',
+    "pos_synonymy_relation",
     Base.metadata,
-    Column('left_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('right_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("left_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("right_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 antonymy_table = Table(
-    'antonymy_relation',
+    "antonymy_relation",
     Base.metadata,
-    Column('left_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('right_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("left_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("right_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 related_table = Table(
-    'related_relation',
+    "related_relation",
     Base.metadata,
-    Column('left_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('right_id', String(), ForeignKey("synset.id"), primary_key=True)
+    Column("left_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("right_id", String(), ForeignKey("synset.id"), primary_key=True),
 )
 
 
 ili_table = Table(
-    'interlingual_index_relation',
+    "interlingual_index_relation",
     Base.metadata,
-    Column('ruwn_id', String(), ForeignKey("synset.id"), primary_key=True),
-    Column('wn_id', String(), ForeignKey("wn_synset.id"), primary_key=True)
+    Column("ruwn_id", String(), ForeignKey("synset.id"), primary_key=True),
+    Column("wn_id", String(), ForeignKey("wn_synset.id"), primary_key=True),
 )
 
 
 class Synset(Base):
-    __tablename__ = 'synset'
+    __tablename__ = "synset"
     metadata = Base.metadata
     id: str = Column(String(), primary_key=True, index=True)
     title: str = Column(String())
     definition: str = Column(String())
     part_of_speech: str = Column(String())
 
-    senses: List[Sense] = relationship("Sense", order_by=Sense.id, back_populates="synset")
+    senses: List[Sense] = relationship(
+        "Sense", order_by=Sense.id, back_populates="synset"
+    )
 
-    hypernyms: List['Synset'] = relationship(
+    hypernyms: List["Synset"] = relationship(
         "Synset",
         secondary=hypernymy_table,
-        back_populates='hyponyms',
+        back_populates="hyponyms",
         primaryjoin=id == hypernymy_table.c.hyponym_id,
         secondaryjoin=id == hypernymy_table.c.hypernym_id,
     )
-    hyponyms: List['Synset'] = relationship(
+    hyponyms: List["Synset"] = relationship(
         "Synset",
         secondary=hypernymy_table,
-        back_populates='hypernyms',
+        back_populates="hypernyms",
         primaryjoin=id == hypernymy_table.c.hypernym_id,
         secondaryjoin=id == hypernymy_table.c.hyponym_id,
     )
@@ -185,128 +192,128 @@ class Synset(Base):
     domains = relationship(
         "Synset",
         secondary=domains_table,
-        back_populates='domain_items',
+        back_populates="domain_items",
         primaryjoin=id == domains_table.c.domain_item_id,
         secondaryjoin=id == domains_table.c.domain_id,
     )
-    domain_items: List['Synset'] = relationship(
+    domain_items: List["Synset"] = relationship(
         "Synset",
         secondary=domains_table,
-        back_populates='domains',
+        back_populates="domains",
         primaryjoin=id == domains_table.c.domain_id,
         secondaryjoin=id == domains_table.c.domain_item_id,
     )
 
-    meronyms: List['Synset'] = relationship(
+    meronyms: List["Synset"] = relationship(
         "Synset",
         secondary=meronymy_table,
-        back_populates='holonyms',
+        back_populates="holonyms",
         primaryjoin=id == meronymy_table.c.holonym_id,
         secondaryjoin=id == meronymy_table.c.meronym_id,
     )
-    holonyms: List['Synset'] = relationship(
+    holonyms: List["Synset"] = relationship(
         "Synset",
         secondary=meronymy_table,
-        back_populates='meronyms',
+        back_populates="meronyms",
         primaryjoin=id == meronymy_table.c.meronym_id,
         secondaryjoin=id == meronymy_table.c.holonym_id,
     )
 
-    instances: List['Synset'] = relationship(
+    instances: List["Synset"] = relationship(
         "Synset",
         secondary=instances_table,
-        back_populates='classes',
+        back_populates="classes",
         primaryjoin=id == instances_table.c.class_id,
         secondaryjoin=id == instances_table.c.instance_id,
     )
-    classes: List['Synset'] = relationship(
+    classes: List["Synset"] = relationship(
         "Synset",
         secondary=instances_table,
-        back_populates='instances',
+        back_populates="instances",
         primaryjoin=id == instances_table.c.instance_id,
         secondaryjoin=id == instances_table.c.class_id,
     )
 
-    premises: List['Synset'] = relationship(
+    premises: List["Synset"] = relationship(
         "Synset",
         secondary=entailment_table,
-        back_populates='conclusions',
+        back_populates="conclusions",
         primaryjoin=id == entailment_table.c.conclusion_id,
         secondaryjoin=id == entailment_table.c.premise_id,
     )
-    conclusions: List['Synset'] = relationship(
+    conclusions: List["Synset"] = relationship(
         "Synset",
         secondary=entailment_table,
-        back_populates='premises',
+        back_populates="premises",
         primaryjoin=id == entailment_table.c.premise_id,
         secondaryjoin=id == entailment_table.c.conclusion_id,
     )
 
-    causes: List['Synset'] = relationship(
+    causes: List["Synset"] = relationship(
         "Synset",
         secondary=cause_table,
-        back_populates='effects',
+        back_populates="effects",
         primaryjoin=id == cause_table.c.effect_id,
         secondaryjoin=id == cause_table.c.cause_id,
     )
-    effects: List['Synset'] = relationship(
+    effects: List["Synset"] = relationship(
         "Synset",
         secondary=cause_table,
-        back_populates='causes',
+        back_populates="causes",
         primaryjoin=id == cause_table.c.cause_id,
         secondaryjoin=id == cause_table.c.effect_id,
     )
 
     # pos_synonyms and antonyms are duplicated - it is easier than dirty SQLAlchemy hacks
-    pos_synonyms: List['Synset'] = relationship(
+    pos_synonyms: List["Synset"] = relationship(
         "Synset",
         secondary=pos_synonymy_table,
-        back_populates='pos_synonyms_reverse',
+        back_populates="pos_synonyms_reverse",
         primaryjoin=id == pos_synonymy_table.c.right_id,
         secondaryjoin=id == pos_synonymy_table.c.left_id,
     )
-    pos_synonyms_reverse: List['Synset'] = relationship(
+    pos_synonyms_reverse: List["Synset"] = relationship(
         "Synset",
         secondary=pos_synonymy_table,
-        back_populates='pos_synonyms',
+        back_populates="pos_synonyms",
         primaryjoin=id == pos_synonymy_table.c.left_id,
         secondaryjoin=id == pos_synonymy_table.c.right_id,
     )
 
-    antonyms: List['Synset'] = relationship(
+    antonyms: List["Synset"] = relationship(
         "Synset",
         secondary=antonymy_table,
-        back_populates='antonyms_reverse',
+        back_populates="antonyms_reverse",
         primaryjoin=id == antonymy_table.c.right_id,
         secondaryjoin=id == antonymy_table.c.left_id,
     )
-    antonyms_reverse: List['Synset'] = relationship(
+    antonyms_reverse: List["Synset"] = relationship(
         "Synset",
         secondary=antonymy_table,
-        back_populates='antonyms',
+        back_populates="antonyms",
         primaryjoin=id == antonymy_table.c.left_id,
         secondaryjoin=id == antonymy_table.c.right_id,
     )
 
-    related: List['Synset'] = relationship(
+    related: List["Synset"] = relationship(
         "Synset",
         secondary=related_table,
-        back_populates='related_reverse',
+        back_populates="related_reverse",
         primaryjoin=id == related_table.c.right_id,
         secondaryjoin=id == related_table.c.left_id,
     )
-    related_reverse: List['Synset'] = relationship(
+    related_reverse: List["Synset"] = relationship(
         "Synset",
         secondary=related_table,
-        back_populates='related',
+        back_populates="related",
         primaryjoin=id == related_table.c.left_id,
         secondaryjoin=id == related_table.c.right_id,
     )
 
-    ili: List['WNSynset'] = relationship(
+    ili: List["WNSynset"] = relationship(
         "WNSynset",
         secondary=ili_table,
-        back_populates='ili',
+        back_populates="ili",
     )
 
     def __repr__(self):
@@ -314,28 +321,30 @@ class Synset(Base):
 
 
 class WNSense(Base):
-    __tablename__ = 'wn_sense'
+    __tablename__ = "wn_sense"
     metadata = Base.metadata
     key: str = Column(String(), primary_key=True, index=True)
     name: str = Column(String(), index=True)
-    synset_id: str = Column(String(), ForeignKey('wn_synset.id'))
-    synset: 'WNSynset' = relationship("WNSynset", back_populates="senses")
+    synset_id: str = Column(String(), ForeignKey("wn_synset.id"))
+    synset: "WNSynset" = relationship("WNSynset", back_populates="senses")
 
     def __repr__(self):
         return 'WNSense(key="{}", name="{}")'.format(self.key, self.name)
 
 
 class WNSynset(Base):
-    __tablename__ = 'wn_synset'
+    __tablename__ = "wn_synset"
     metadata = Base.metadata
     id: str = Column(String(), primary_key=True, index=True)
     definition: str = Column(String())
-    senses: List[WNSense] = relationship("WNSense", order_by=WNSense.key, back_populates="synset")
+    senses: List[WNSense] = relationship(
+        "WNSense", order_by=WNSense.key, back_populates="synset"
+    )
 
     ili: List[Synset] = relationship(
         "Synset",
         secondary=ili_table,
-        back_populates='ili',
+        back_populates="ili",
     )
 
     def __repr__(self):
